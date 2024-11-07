@@ -1,0 +1,16 @@
+{
+  "status": "DONE",
+  "references": [
+    {
+      "title": "Meta-Learning through Hebbian Plasticity in Random Network",
+      "url": "https://arxiv.org/abs/2007.02686",
+      "year": null
+    }
+  ],
+  "tags": [
+    "Neural Networks",
+    "Meta-Learning",
+    "Julia",
+    "Reinforcement Learning"
+  ]
+}
