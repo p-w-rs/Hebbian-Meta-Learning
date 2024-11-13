@@ -1,8 +1,9 @@
 {
+  "description": "Julia implementation of the paper 'Meta-Learning through Hebbian Plasticity in Random Networks'.",
   "status": "DONE",
   "references": [
     {
-      "title": "Meta-Learning through Hebbian Plasticity in Random Network",
+      "title": "Meta-Learning through Hebbian Plasticity in Random Networks",
       "url": "https://arxiv.org/abs/2007.02686",
       "year": null
     }
