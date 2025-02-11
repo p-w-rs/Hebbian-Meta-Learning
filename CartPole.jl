@@ -1,7 +1,12 @@
-using PyCall, BlackBoxOptim
+# Main script (LunarLander.jl)
+using PyCall, StatsBase
+using BSON: @save
 
 include("NNLib.jl")
 using .NNLib
+
+include("ESOptimizer.jl")
+using .ESOptimizer
 
 # Load the environment
 gym = pyimport("gymnasium")
@@ -19,12 +24,12 @@ model = Chain(
 )
 x0, restructure = destructure(model)
 
-function episode(env, params)
+function objective_fn(env, n, params)
     model = restructure(params)
-    rewards = zeros(10)
-    for i in 1:10
+    rewards = zeros(Float32, n)
+    for i in 1:n
         (observation, info), done = env.reset(seed=i), false
-        total_reward = 0.0
+        total_reward = 0.0f0
         while !done
             action = argmax(model(observation))
             observation, reward, terminated, truncated, info = env.step(action - 1)
@@ -33,17 +38,31 @@ function episode(env, params)
         end
         rewards[i] = total_reward
     end
-    return -sum(rewards) / 10
+    return mean(rewards)
 end
 
-res = bboptimize(
-    ps -> episode(env, Float32.(ps)); Method=:adaptive_de_rand_1_bin_radiuslimited,
-    SearchRange=(-1.0, 1.0), NumDimensions=length(x0),
-    MaxSteps=50000, TraceMode=:compact
-);
+# Configure ES optimization
+config = ESConfig(
+    population_size=500,
+    learning_rate=0.1f0,
+    sigma=0.1f0,
+    lr_decay=0.995f0,
+    sigma_decay=0.999f0
+)
 
-fitness = best_fitness(res)
-params = Float32.(best_candidate(res))
+# Run optimization
+fitness_fn = params -> objective_fn(env, 20, params)
+# Example usage with fitness cap
+best_params, best_fitness = optimize(
+    fitness_fn, Float32.(x0), config,
+    generations=1000,
+    seed=1,
+    fitness_cap=500.0f0
+)
+
+
+# Test the best solution
 env = gym.make("CartPole-v1", render_mode="human")
-total_reward = episode(env, params)
-println("Total reward: $total_reward")
+total_reward = objective_fn(env, 1, best_params)
+println("Final test reward: $total_reward")
+@save "results/cartpole.bson" best_params

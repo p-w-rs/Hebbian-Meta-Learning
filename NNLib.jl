@@ -63,32 +63,39 @@ function destructure(model::Union{Chain,Dense})
 
         # Create restructure function for Dense
         let model = model  # Create closure
-            restructure = function (ps::Vector{Float32})
+            restructure = function (ps)
                 pointer = 1
 
                 w_size = length(model.weights)
                 b_size = length(model.bias)
                 m_size = length(model.η)
+                w = Matrix{Float32}(undef, size(model.weights))
+                b = Vector{Float32}(undef, size(model.bias))
+                η = Matrix{Float32}(undef, size(model.η))
+                A = Matrix{Float32}(undef, size(model.A))
+                B = Matrix{Float32}(undef, size(model.B))
+                C = Matrix{Float32}(undef, size(model.C))
+                D = Matrix{Float32}(undef, size(model.D))
 
-                w = reshape(ps[pointer:pointer+w_size-1], size(model.weights))
+                w .= reshape(ps[pointer:pointer+w_size-1], size(model.weights))
                 pointer += w_size
 
-                b = ps[pointer:pointer+b_size-1]
+                b .= ps[pointer:pointer+b_size-1]
                 pointer += b_size
 
-                η = reshape(ps[pointer:pointer+m_size-1], size(model.η))
+                η .= reshape(ps[pointer:pointer+m_size-1], size(model.η))
                 pointer += m_size
 
-                A = reshape(ps[pointer:pointer+m_size-1], size(model.A))
+                A .= reshape(ps[pointer:pointer+m_size-1], size(model.A))
                 pointer += m_size
 
-                B = reshape(ps[pointer:pointer+m_size-1], size(model.B))
+                B .= reshape(ps[pointer:pointer+m_size-1], size(model.B))
                 pointer += m_size
 
-                C = reshape(ps[pointer:pointer+m_size-1], size(model.C))
+                C .= reshape(ps[pointer:pointer+m_size-1], size(model.C))
                 pointer += m_size
 
-                D = reshape(ps[pointer:pointer+m_size-1], size(model.D))
+                D .= reshape(ps[pointer:pointer+m_size-1], size(model.D))
 
                 return Dense(w, b, model.σ, η, A, B, C, D)
             end
@@ -108,7 +115,7 @@ function destructure(model::Union{Chain,Dense})
 
         # Create restructure function for Chain
         let model = model  # Create closure
-            restructure = function (ps::Vector{Float32})
+            restructure = function (ps)
                 pointer = 1
                 layers = []
 
@@ -116,26 +123,33 @@ function destructure(model::Union{Chain,Dense})
                     w_size = length(layer.weights)
                     b_size = length(layer.bias)
                     m_size = length(layer.η)
+                    w = Matrix{Float32}(undef, size(layer.weights))
+                    b = Vector{Float32}(undef, size(layer.bias))
+                    η = Matrix{Float32}(undef, size(layer.η))
+                    A = Matrix{Float32}(undef, size(layer.A))
+                    B = Matrix{Float32}(undef, size(layer.B))
+                    C = Matrix{Float32}(undef, size(layer.C))
+                    D = Matrix{Float32}(undef, size(layer.D))
 
-                    w = reshape(ps[pointer:pointer+w_size-1], size(layer.weights))
+                    w .= reshape(ps[pointer:pointer+w_size-1], size(layer.weights))
                     pointer += w_size
 
-                    b = ps[pointer:pointer+b_size-1]
+                    b .= ps[pointer:pointer+b_size-1]
                     pointer += b_size
 
-                    η = reshape(ps[pointer:pointer+m_size-1], size(layer.η))
+                    η .= reshape(ps[pointer:pointer+m_size-1], size(layer.η))
                     pointer += m_size
 
-                    A = reshape(ps[pointer:pointer+m_size-1], size(layer.A))
+                    A .= reshape(ps[pointer:pointer+m_size-1], size(layer.A))
                     pointer += m_size
 
-                    B = reshape(ps[pointer:pointer+m_size-1], size(layer.B))
+                    B .= reshape(ps[pointer:pointer+m_size-1], size(layer.B))
                     pointer += m_size
 
-                    C = reshape(ps[pointer:pointer+m_size-1], size(layer.C))
+                    C .= reshape(ps[pointer:pointer+m_size-1], size(layer.C))
                     pointer += m_size
 
-                    D = reshape(ps[pointer:pointer+m_size-1], size(layer.D))
+                    D .= reshape(ps[pointer:pointer+m_size-1], size(layer.D))
                     pointer += m_size
 
                     push!(layers, Dense(w, b, layer.σ, η, A, B, C, D))
